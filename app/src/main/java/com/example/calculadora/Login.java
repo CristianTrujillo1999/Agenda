@@ -56,16 +56,17 @@ public class Login extends AppCompatActivity {
         String mail = "-";
 
         if(!edtUserMail.getText().toString().isEmpty()){
-            mail = edtUserCode.getText().toString();
+            mail = edtUserMail.getText().toString();
         }
 
-        Cursor fila = bd.rawQuery("SELECT * FROM usuarios WHERE id="+userCode + " AND email='"+mail+"'",null);
+        Cursor fila = bd.rawQuery("SELECT * FROM usuarios WHERE id=" +userCode + " AND email='" +mail+"'",null);
         if (fila.moveToFirst()){
             Intent intent = new Intent( this, Calculadora.class);
             startActivity(intent);
         }else{
             Toast.makeText(this,"Credenciales incorrectos",Toast.LENGTH_LONG).show();
         }
+
         bd.close();
     }
 }

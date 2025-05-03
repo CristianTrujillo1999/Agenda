@@ -2,6 +2,7 @@ package com.example.calculadora;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -68,6 +69,24 @@ public class Calculadora extends AppCompatActivity {
             historial.add("Historial");
             spinnerHt.setAdapter(adaptador1);
 
+            spinnerHt.setOnItemSelectedListener(
+                    new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                            Object item = parent.getItemAtPosition(position);
+                            String ResHistorial = item.toString();
+                            if(!ResHistorial.equals("Historial")) {
+                                resultado.setText("");
+                                resultado.setText(ResHistorial.substring(ResHistorial.lastIndexOf(" ") + 1));
+                            }
+                        }
+
+                        @Override
+                        public void onNothingSelected(AdapterView<?> parent) {
+
+                        }
+                    }
+            );
 
         }
 
@@ -138,7 +157,7 @@ public class Calculadora extends AppCompatActivity {
             if (!CalcOperacion.isEmpty()){
                 solucion.setText("");
                 resultado.setText(result);
-                historial.add(result+"");
+                historial.add(CalcOperacion + " = " + result);
             }
 
             if (result.equals("NaN") && !CalcOperacion.isEmpty()){
