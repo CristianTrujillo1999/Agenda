@@ -1,6 +1,9 @@
 package com.example.calculadora;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -16,12 +19,12 @@ import java.util.ArrayList;
 public class MostrarUsuarios extends AppCompatActivity {
 
     private EditText etCodigo, etNombre, etApellido, etEdad, etEmail, etTelefono, etDireccion;
-    private ArrayList<Usuario> listaUsuarios;
     RadioGroup rg1;
     RadioButton rb1, rb2, rb3;
     Spinner sp1;
     String estudios[] = {"No tiene","Primaria","Secundaria","Bachiller","Técnica y Tecnológica","Universitaria","Posgrado"};
     CheckBox cb1, cb2, cb3, cb4, cb5, cb6, cb7, cb8, cb9, cb10, cb11, cb12, cb13, cb14, cb15;
+    AdminSQLiteOpenHelper admin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,199 +61,184 @@ public class MostrarUsuarios extends AppCompatActivity {
         cb14 = findViewById(R.id.cb14);
         cb15 = findViewById(R.id.cb15);
 
-        listaUsuarios = (ArrayList<Usuario>) getIntent().getSerializableExtra("listaUsuarios");
+        admin = new AdminSQLiteOpenHelper(this,"agenda",null,1);
     }
 
     public void mostrarUsuario(View view) {
-        String codigoStr = etCodigo.getText().toString();
+        SQLiteDatabase bd = admin.getWritableDatabase();
+        int id = Integer.parseInt(etCodigo.getText().toString());
+        Cursor fila = bd.rawQuery("SELECT * from usuarios where id="+id,null);
 
-        if (codigoStr.isEmpty()) {
+        if ((etCodigo.getText().toString()).isEmpty()) {
             Toast.makeText(this, "Por favor ingresa un codigo", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        try {
-            int codigo = Integer.parseInt(codigoStr);
-            Usuario usuario = buscarUsuario(codigo);
-
-            if (usuario != null) {
-                etNombre.setText(usuario.getNombre());
-                etApellido.setText(usuario.getApellido());
-                etEdad.setText(String.valueOf(usuario.getEdad()));
-                if(usuario.getSexo().equals("Otro")){
-                    rb3.setChecked(true);
-                }
-                if(usuario.getSexo().equals("Masculino")){
-                    rb1.setChecked(true);
-                }
-                if(usuario.getSexo().equals("Femenino")){
-                    rb2.setChecked(true);
-                }
-                etEmail.setText(usuario.getEmail());
-                etTelefono.setText(usuario.getTelefono());
-                etDireccion.setText(usuario.getDireccion());
-
-                sp1.setSelection(Integer.parseInt(usuario.getEscolaridad()));
-
-                if (usuario.getIntereses().contains("Videojuegos")){
-                    cb1.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Musica")){
-                    cb2.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Deporte")){
-                    cb3.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Literatura")){
-                    cb4.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Arte")){
-                    cb5.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Cine")){
-                    cb6.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Programacion")){
-                    cb7.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Cocina")){
-                    cb8.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Escritura")){
-                    cb9.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Manualidades")){
-                    cb10.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Idiomas")){
-                    cb11.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Fotografia")){
-                    cb12.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Jardineria")){
-                    cb13.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Modelismo")){
-                    cb14.setChecked(true);
-                }
-                if (usuario.getIntereses().contains("Meditacion")){
-                    cb15.setChecked(true);
-                }
-
-
+        if (fila.moveToFirst()){
+            etNombre.setText(fila.getString(1));
+            etApellido.setText(fila.getString(2));
+            etEdad.setText(String.valueOf(fila.getString(3)));
+            if(fila.getString(4).equals("Otro")){
+                rb3.setChecked(true);
             }
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Codigo erroneo. Ingrese un numero", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private Usuario buscarUsuario(int codigo) {
-        for (Usuario usuario : listaUsuarios) {
-            if (usuario.getCodigo() == codigo) {
-                return usuario;
+            if(fila.getString(4).equals("Masculino")){
+                rb1.setChecked(true);
             }
+            if(fila.getString(4).equals("Femenino")){
+                rb2.setChecked(true);
+            }
+
+            etEmail.setText(fila.getString(5));
+            etTelefono.setText(fila.getString(6));
+            etDireccion.setText(fila.getString(7));
+
+            sp1.setSelection(Integer.parseInt(fila.getString(8)));
+
+            cb1.setChecked(false);
+            cb2.setChecked(false);
+            cb3.setChecked(false);
+            cb4.setChecked(false);
+            cb5.setChecked(false);
+            cb6.setChecked(false);
+            cb7.setChecked(false);
+            cb8.setChecked(false);
+            cb9.setChecked(false);
+            cb10.setChecked(false);
+            cb11.setChecked(false);
+            cb12.setChecked(false);
+            cb13.setChecked(false);
+            cb14.setChecked(false);
+            cb15.setChecked(false);
+
+            if (fila.getString(9).contains("Videojuegos")){
+                cb1.setChecked(true);
+            }
+            if (fila.getString(9).contains("Musica")){
+                cb2.setChecked(true);
+            }
+            if (fila.getString(9).contains("Deporte")){
+                cb3.setChecked(true);
+            }
+            if (fila.getString(9).contains("Literatura")){
+                cb4.setChecked(true);
+            }
+            if (fila.getString(9).contains("Arte")){
+                cb5.setChecked(true);
+            }
+            if (fila.getString(9).contains("Cine")){
+                cb6.setChecked(true);
+            }
+            if (fila.getString(9).contains("Programacion")){
+                cb7.setChecked(true);
+            }
+            if (fila.getString(9).contains("Cocina")){
+                cb8.setChecked(true);
+            }
+            if (fila.getString(9).contains("Escritura")){
+                cb9.setChecked(true);
+            }
+            if (fila.getString(9).contains("Manualidades")){
+                cb10.setChecked(true);
+            }
+            if (fila.getString(9).contains("Idiomas")){
+                cb11.setChecked(true);
+            }
+            if (fila.getString(9).contains("Fotografia")){
+                cb12.setChecked(true);
+            }
+            if (fila.getString(9).contains("Jardineria")){
+                cb13.setChecked(true);
+            }
+            if (fila.getString(9).contains("Modelismo")){
+                cb14.setChecked(true);
+            }
+            if (fila.getString(9).contains("Meditacion")){
+                cb15.setChecked(true);
+            }
+        }else{
+            Toast.makeText(this,"No existe el usuario",Toast.LENGTH_LONG).show();
         }
-        return null;
+        bd.close();
     }
 
     public void modificar(View view) {
-        String codigoStr = etCodigo.getText().toString();
+        SQLiteDatabase bd = admin.getWritableDatabase();
+        int id = Integer.parseInt(etCodigo.getText().toString());
+        ContentValues registro = new ContentValues();
 
-        if (codigoStr.isEmpty()) {
+        if ((etCodigo.getText().toString()).isEmpty()) {
             Toast.makeText(this, "Por favor ingresa un codigo", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        try {
-            int codigo = Integer.parseInt(codigoStr);
-            Usuario usuario = buscarUsuario(codigo);
-
-            if (usuario != null) {
-                usuario.setNombre(etNombre.getText().toString());
-                usuario.setApellido(etApellido.getText().toString());
-                usuario.setEdad(Integer.parseInt(etEdad.getText().toString()));
-                if (rb1.isChecked()){
-                    usuario.setSexo("Masculino");
-                }
-                if (rb2.isChecked()){
-                    usuario.setSexo("Femenino");
-                }
-                if (rb3.isChecked()){
-                    usuario.setSexo("Otro");
-                }
-                usuario.setEmail(etEmail.getText().toString());
-                usuario.setTelefono(etTelefono.getText().toString());
-                usuario.setDireccion(etDireccion.getText().toString());
-                usuario.setEscolaridad(sp1.getSelectedItemPosition()+"");
-                String intereses = "";
-                if(cb1.isChecked()){
-                    intereses += "Videojuegos";
-                }
-                if(cb2.isChecked()){
-                    intereses += "Musica";
-                }
-                if(cb3.isChecked()){
-                    intereses += "Deporte";
-                }
-                if(cb4.isChecked()){
-                    intereses += "Literatura";
-                }
-                if(cb5.isChecked()){
-                    intereses += "Arte";
-                }
-                if(cb6.isChecked()){
-                    intereses += "Cine";
-                }
-                if(cb7.isChecked()){
-                    intereses += "Programacion";
-                }
-                if(cb8.isChecked()){
-                    intereses += "Cocina";
-                }
-                if(cb9.isChecked()){
-                    intereses += "Escritura";
-                }
-                if(cb10.isChecked()){
-                    intereses += "Manualidades";
-                }
-                if(cb11.isChecked()){
-                    intereses += "Idiomas";
-                }
-                if(cb12.isChecked()){
-                    intereses += "Fotografia";
-                }
-                if(cb13.isChecked()){
-                    intereses += "Jardineria";
-                }
-                if(cb14.isChecked()){
-                    intereses += "Modelismo";
-                }
-                if(cb15.isChecked()){
-                    intereses += "Meditacion";
-                }
-                usuario.setIntereses(intereses);
-
-                Toast.makeText(this, "Usuario modificado correctamente", Toast.LENGTH_SHORT).show();
-                actualizarLista();
-            } else {
-                Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
-            }
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Error en los datos ingresados", Toast.LENGTH_SHORT).show();
+        registro.put("nombre",etNombre.getText().toString());
+        registro.put("apellido",etApellido.getText().toString());
+        registro.put("edad",Integer.parseInt(etEdad.getText().toString()));
+        if (rb1.isChecked()){
+            registro.put("sexo","Masculino");
         }
-    }
+        if (rb2.isChecked()){
+            registro.put("sexo","Femenino");
+        }
+        if (rb3.isChecked()){
+            registro.put("sexo","Otro");
+        }
+        registro.put("email",etEmail.getText().toString());
+        registro.put("telefono",etTelefono.getText().toString());
+        registro.put("direccion",etDireccion.getText().toString());
+        registro.put("escolaridad",sp1.getSelectedItemPosition()+"");
 
-    private void actualizarLista() {
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("listaUsuarios", listaUsuarios);
-        setResult(RESULT_OK, resultIntent);
-        finish();
-    }
+        String intereses = "";
+        if(cb1.isChecked()){
+            intereses += "Videojuegos";
+        }
+        if(cb2.isChecked()){
+            intereses += "Musica";
+        }
+        if(cb3.isChecked()){
+            intereses += "Deporte";
+        }
+        if(cb4.isChecked()){
+            intereses += "Literatura";
+        }
+        if(cb5.isChecked()){
+            intereses += "Arte";
+        }
+        if(cb6.isChecked()){
+            intereses += "Cine";
+        }
+        if(cb7.isChecked()){
+            intereses += "Programacion";
+        }
+        if(cb8.isChecked()){
+            intereses += "Cocina";
+        }
+        if(cb9.isChecked()){
+            intereses += "Escritura";
+        }
+        if(cb10.isChecked()){
+            intereses += "Manualidades";
+        }
+        if(cb11.isChecked()){
+            intereses += "Idiomas";
+        }
+        if(cb12.isChecked()){
+            intereses += "Fotografia";
+        }
+        if(cb13.isChecked()){
+            intereses += "Jardineria";
+        }
+        if(cb14.isChecked()){
+            intereses += "Modelismo";
+        }
+        if(cb15.isChecked()){
+            intereses += "Meditacion";
+        }
+        registro.put("intereses",intereses);
 
-    @Override
-    public void onBackPressed() {
-        actualizarLista();
-        super.onBackPressed();
-    }
+        bd.update("usuarios",registro,"id="+id,null);
+
+        Toast.makeText(this, "Usuario modificado correctamente", Toast.LENGTH_SHORT).show();
+
+        }
 }

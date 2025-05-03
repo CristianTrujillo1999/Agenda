@@ -1,5 +1,8 @@
 package com.example.calculadora;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -16,13 +19,12 @@ import java.util.ArrayList;
 public class MainClass extends AppCompatActivity {
 
     private EditText etNombre, etApellido, etEdad, etEmail, etTelefono, etDireccion;
-    private ArrayList<Usuario> listaUsuarios = new ArrayList<>();
     RadioGroup rg1;
     RadioButton rb1, rb2, rb3;
-    private int contadorCodigo = 1;
     Spinner sp1;
     String estudios[] = {"No tiene","Primaria","Secundaria","Bachiller","Técnica y Tecnológica","Universitaria","Posgrado"};
     CheckBox cb1, cb2, cb3, cb4, cb5, cb6, cb7, cb8, cb9, cb10, cb11, cb12, cb13, cb14, cb15;
+    AdminSQLiteOpenHelper admin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +59,8 @@ public class MainClass extends AppCompatActivity {
         cb13 = findViewById(R.id.cb13);
         cb14 = findViewById(R.id.cb14);
         cb15 = findViewById(R.id.cb15);
+
+        admin = new AdminSQLiteOpenHelper(this,"agenda",null,1);
     }
 
 
@@ -68,27 +72,15 @@ public class MainClass extends AppCompatActivity {
     }
 
     public void siguienteActividad(View View){
-
-        if (listaUsuarios.isEmpty()) {
-            Toast.makeText(this, "No hay usuarios registrados", Toast.LENGTH_SHORT).show();
-            return;
+        SQLiteDatabase bd = admin.getWritableDatabase();
+        Cursor fila = bd.rawQuery("SELECT * from usuarios", null);
+        if (fila.moveToFirst()){
+            Intent intent = new Intent( this, MostrarUsuarios.class);
+            startActivity(intent);
+        }else{
+            Toast.makeText(this,"No existe el usuario",Toast.LENGTH_LONG).show();
         }
-
-        Intent intent = new Intent(this, MostrarUsuarios.class);
-        intent.putExtra("listaUsuarios", listaUsuarios);
-        startActivityForResult(intent, 100);
-
-    }
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 100 && resultCode == RESULT_OK) {
-            if (data != null) {
-                listaUsuarios = (ArrayList<Usuario>) data.getSerializableExtra("listaUsuarios");
-                Toast.makeText(this, "Lista de usuarios actualizada", Toast.LENGTH_SHORT).show();
-            }
-        }
+        bd.close();
     }
 
     public void guardarUsuario(View view) {
@@ -116,6 +108,7 @@ public class MainClass extends AppCompatActivity {
         String direccion = etDireccion.getText().toString();
         String escolaridad = "" + sp1.getSelectedItemPosition();
         String intereses = "";
+
         if(cb1.isChecked()){
             intereses += "Videojuegos";
         }
@@ -162,17 +155,19 @@ public class MainClass extends AppCompatActivity {
             intereses += "Meditacion";
         }
 
-
-
-        Usuario Usuarios = new Usuario(contadorCodigo, nombre, apellido, edad, sexo, email, telefono, direccion, escolaridad , intereses);
-
-
-        listaUsuarios.add(Usuarios);
-
-        contadorCodigo++;
-
-        Toast.makeText(this, "Usuario guardada con código: " + Usuarios.getCodigo(), Toast.LENGTH_SHORT).show();
-
+        SQLiteDatabase db = admin.getWritableDatabase();
+        ContentValues registro = new ContentValues();
+        registro.put("nombre", nombre);
+        registro.put("apellido", apellido);
+        registro.put("edad", edad);
+        registro.put("sexo", sexo);
+        registro.put("email", email);
+        registro.put("telefono", telefono);
+        registro.put("direccion", direccion);
+        registro.put("escolaridad", escolaridad);
+        registro.put("intereses", intereses);
+        long id = db.insert("usuarios", null, registro);
+        Toast.makeText(this, "Usuario guardada con código: " + id, Toast.LENGTH_SHORT).show();
 
         etNombre.setText("");
         etApellido.setText("");
@@ -197,6 +192,8 @@ public class MainClass extends AppCompatActivity {
         cb13.setChecked(false);
         cb14.setChecked(false);
         cb15.setChecked(false);
+
+        db.close();
 
     }
 
