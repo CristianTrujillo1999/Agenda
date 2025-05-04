@@ -15,6 +15,10 @@ import android.widget.Spinner;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 public class MostrarUsuarios extends AppCompatActivity {
 
@@ -236,8 +240,46 @@ public class MostrarUsuarios extends AppCompatActivity {
         }
         registro.put("intereses",intereses);
 
-        bd.update("usuarios",registro,"id="+id,null);
+        try {
+            String archivo = "DatosUsuarios.txt";
+            StringBuilder nuevoContenido = new StringBuilder();
+            BufferedReader br = new BufferedReader(new InputStreamReader(openFileInput(archivo)));
+            String linea;
 
+            String nuevaLinea = etNombre.getText().toString() + ";" +
+                    etApellido.getText().toString() + ";" +
+                    etEdad.getText().toString() + ";" +
+                    (rb1.isChecked() ? "Masculino" : rb2.isChecked() ? "Femenino" : "Otro") + ";" +
+                    etEmail.getText().toString() + ";" +
+                    etTelefono.getText().toString() + ";" +
+                    etDireccion.getText().toString() + ";" +
+                    sp1.getSelectedItemPosition() + ";" +
+                    intereses;
+
+            String emailViejo = "";
+            Cursor cursor = bd.rawQuery("SELECT email FROM usuarios WHERE id="+id, null);
+            if (cursor.moveToFirst()) {
+                emailViejo = cursor.getString(0);
+            }
+
+            while ((linea = br.readLine()) != null) {
+                String[] partes = linea.split(";");
+                if (partes.length >= 6 && partes[4].equals(emailViejo)) {
+                    nuevoContenido.append(nuevaLinea).append("\n");
+                } else {
+                    nuevoContenido.append(linea).append("\n");
+                }
+            }
+
+            OutputStreamWriter file = new OutputStreamWriter(openFileOutput(archivo, MODE_PRIVATE));
+            file.write(nuevoContenido.toString());
+            file.close();
+
+        } catch (IOException e) {
+            Toast.makeText(this, "Error actualizando archivo", Toast.LENGTH_SHORT).show();
+        }
+
+        bd.update("usuarios",registro,"id="+id,null);
         Toast.makeText(this, "Usuario modificado correctamente", Toast.LENGTH_SHORT).show();
 
         }

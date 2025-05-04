@@ -1,6 +1,8 @@
 package com.example.calculadora;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -13,6 +15,12 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 import java.util.ArrayList;
 
@@ -25,6 +33,7 @@ public class MainClass extends AppCompatActivity {
     String estudios[] = {"No tiene","Primaria","Secundaria","Bachiller","Técnica y Tecnológica","Universitaria","Posgrado"};
     CheckBox cb1, cb2, cb3, cb4, cb5, cb6, cb7, cb8, cb9, cb10, cb11, cb12, cb13, cb14, cb15;
     AdminSQLiteOpenHelper admin;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +68,36 @@ public class MainClass extends AppCompatActivity {
         cb13 = findViewById(R.id.cb13);
         cb14 = findViewById(R.id.cb14);
         cb15 = findViewById(R.id.cb15);
-
         admin = new AdminSQLiteOpenHelper(this,"agenda",null,1);
+
+
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(openFileInput("DatosUsuarios")));
+            String linea;
+            SQLiteDatabase db = admin.getWritableDatabase();
+            while ((linea = br.readLine()) != null) {
+                String[] partes = linea.split(";");
+                if (partes.length == 9) {
+                    ContentValues registro = new ContentValues();
+                    registro.put("nombre", partes[0]);
+                    registro.put("apellido", partes[1]);
+                    registro.put("edad", Integer.parseInt(partes[2]));
+                    registro.put("sexo", partes[3]);
+                    registro.put("email", partes[4]);
+                    registro.put("telefono", partes[5]);
+                    registro.put("direccion", partes[6]);
+                    registro.put("escolaridad", partes[7]);
+                    registro.put("intereses", partes[8]);
+
+                    db.insert("usuarios", null, registro);
+                }
+            }
+            db.close();
+            br.close();
+
+        } catch (IOException e) {
+            Toast.makeText(this, "Error al leer archivo", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -169,6 +206,16 @@ public class MainClass extends AppCompatActivity {
         long id = db.insert("usuarios", null, registro);
         Toast.makeText(this, "Usuario guardada con código: " + id, Toast.LENGTH_SHORT).show();
 
+        try {
+            OutputStreamWriter archivo = new OutputStreamWriter(openFileOutput("DatosUsuarios", Context.MODE_APPEND));
+            String datos = nombre + ";" + apellido + ";" + edad + ";" + sexo + ";" + email + ";" + telefono + ";" + direccion + ";" + escolaridad + ";" + intereses + "\n";
+            archivo.write(datos);
+            archivo.flush();
+            archivo.close();
+        } catch (IOException e) {
+            Toast.makeText(this, "Error al guardar en archivo", Toast.LENGTH_SHORT).show();
+        }
+
         etNombre.setText("");
         etApellido.setText("");
         etEdad.setText("");
@@ -192,6 +239,7 @@ public class MainClass extends AppCompatActivity {
         cb13.setChecked(false);
         cb14.setChecked(false);
         cb15.setChecked(false);
+
 
         db.close();
 
