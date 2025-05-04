@@ -72,7 +72,7 @@ public class MainClass extends AppCompatActivity {
 
 
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(openFileInput("DatosUsuarios")));
+            BufferedReader br = new BufferedReader(new InputStreamReader(openFileInput("DatosUsuarios.txt")));
             String linea;
             SQLiteDatabase db = admin.getWritableDatabase();
             while ((linea = br.readLine()) != null) {
@@ -207,7 +207,7 @@ public class MainClass extends AppCompatActivity {
         Toast.makeText(this, "Usuario guardada con código: " + id, Toast.LENGTH_SHORT).show();
 
         try {
-            OutputStreamWriter archivo = new OutputStreamWriter(openFileOutput("DatosUsuarios", Context.MODE_APPEND));
+            OutputStreamWriter archivo = new OutputStreamWriter(openFileOutput("DatosUsuarios.txt", Context.MODE_APPEND));
             String datos = nombre + ";" + apellido + ";" + edad + ";" + sexo + ";" + email + ";" + telefono + ";" + direccion + ";" + escolaridad + ";" + intereses + "\n";
             archivo.write(datos);
             archivo.flush();
