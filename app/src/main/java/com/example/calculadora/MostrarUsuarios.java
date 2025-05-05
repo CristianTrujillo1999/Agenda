@@ -275,7 +275,8 @@ public class MostrarUsuarios extends AppCompatActivity {
             file.close();
 
         } catch (IOException e) {
-            Toast.makeText(this, "Error actualizando archivo", Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(this, ""+e, Toast.LENGTH_SHORT).show();
         }
 
         bd.update("usuarios",registro,"id="+id,null);
