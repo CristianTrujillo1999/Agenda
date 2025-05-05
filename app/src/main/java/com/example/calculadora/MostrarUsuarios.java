@@ -1,7 +1,6 @@
 package com.example.calculadora;
 
 import android.content.ContentValues;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -19,7 +18,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
+
 public class MostrarUsuarios extends AppCompatActivity {
 
     private EditText etCodigo, etNombre, etApellido, etEdad, etEmail, etTelefono, etDireccion;
@@ -282,5 +281,57 @@ public class MostrarUsuarios extends AppCompatActivity {
         bd.update("usuarios",registro,"id="+id,null);
         Toast.makeText(this, "Usuario modificado correctamente", Toast.LENGTH_SHORT).show();
 
+    }
+
+    public void eliminar(View view) {
+
+        if (etCodigo.getText().toString().isEmpty()) {
+            Toast.makeText(this, "Por favor ingresa un código", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        int id = Integer.parseInt(etCodigo.getText().toString());
+        SQLiteDatabase bd = admin.getWritableDatabase();
+
+        String emailUsuario = "";
+        Cursor cursor = bd.rawQuery("SELECT email FROM usuarios WHERE id=" + id, null);
+        if (cursor.moveToFirst()) {
+            emailUsuario = cursor.getString(0);
+        } else {
+            Toast.makeText(this, "No existe el usuario", Toast.LENGTH_SHORT).show();
+            cursor.close();
+            bd.close();
+            return;
+        }
+
+        int Eliminados = bd.delete("usuarios", "id=" + id, null);
+        bd.close();
+
+        if (Eliminados > 0) {
+            try {
+                String archivo = "DatosUsuarios.txt";
+                StringBuilder nuevoContenido = new StringBuilder();
+                BufferedReader br = new BufferedReader(new InputStreamReader(openFileInput(archivo)));
+                String linea;
+
+                while ((linea = br.readLine()) != null) {
+                    String[] partes = linea.split(";");
+                    if (partes.length >= 5 && !partes[4].equals(emailUsuario)) {
+                        nuevoContenido.append(linea).append("\n");
+                    }
+                }
+
+                OutputStreamWriter file = new OutputStreamWriter(openFileOutput(archivo, MODE_PRIVATE));
+                file.write(nuevoContenido.toString());
+                file.close();
+
+                Toast.makeText(this, "Usuario eliminado correctamente", Toast.LENGTH_SHORT).show();
+
+            } catch (IOException e) {
+                Toast.makeText(this, "Error al eliminar del archivo", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "No se pudo eliminar el usuario", Toast.LENGTH_SHORT).show();
+        }
+    }
 }
