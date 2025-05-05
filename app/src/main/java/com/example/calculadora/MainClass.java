@@ -89,7 +89,11 @@ public class MainClass extends AppCompatActivity {
                     registro.put("escolaridad", partes[7]);
                     registro.put("intereses", partes[8]);
 
-                    db.insert("usuarios", null, registro);
+                    Cursor cursor = db.rawQuery("SELECT * FROM usuarios WHERE email='" + partes[4]+"'", null);
+                    if(!cursor.moveToFirst()){
+                        db.insert("usuarios", null, registro);
+                    }
+                    
                 }
             }
             db.close();
